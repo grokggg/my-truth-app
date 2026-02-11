@@ -3,57 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>绝对真理移动版</title>
+    <title>绝对真理 V2.0</title>
     <style>
-        body { background: #121212; color: #d4af37; font-family: sans-serif; margin: 0; display: flex; justify-content: center; padding-top: 20px; }
-        .app-card { background: #1e1e1e; width: 90%; border-radius: 20px; padding: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #d4af37; color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 16px; } /* 16px 防止iOS自动放大 */
-        button { width: 100%; padding: 15px; background: #d4af37; color: #000; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; margin-top: 10px; }
-        .res-box { margin-top: 20px; display: none; border-top: 1px solid #333; padding-top: 20px; text-align: center; }
-        .gua-wrap { display: flex; justify-content: space-around; font-size: 24px; margin-bottom: 15px; }
-        .hint { color: #888; font-size: 14px; line-height: 1.6; }
+        :root { --main-color: #d4af37; --bg-color: #121212; }
+        body { background: var(--bg-color); color: var(--main-color); font-family: sans-serif; transition: all 1s ease; margin: 0; padding: 20px; }
+        .app-card { background: rgba(30,30,30,0.9); border-radius: 20px; padding: 20px; border: 1px solid var(--main-color); box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--main-color); color: #000; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; }
+        .result { margin-top: 20px; display: none; text-align: center; border-top: 1px solid #333; padding-top: 20px; }
+        .gua-display { font-size: 30px; letter-spacing: 10px; margin: 15px 0; text-shadow: 0 0 10px var(--main-color); }
     </style>
 </head>
 <body>
     <div class="app-card">
-        <h2 style="text-align:center">🏮 演化决策引擎</h2>
-        <input type="text" id="target" placeholder="输入目标（如：英维克）">
-        <input type="text" id="env" placeholder="输入当前环境（如：监管加强）">
-        <button onclick="calc()">开始推演</button>
-        
-        <div id="res" class="res-box">
-            <div class="gua-wrap">
-                <div id="b1"></div>
-                <div style="color:#555">→</div>
-                <div id="b2"></div>
-            </div>
-            <div id="yao" style="margin-bottom:10px"></div>
-            <p class="hint" id="info"></p>
+        <h2 id="appTitle">🏮 真理演化引擎 V2.0</h2>
+        <input type="text" id="target" placeholder="分析对象 (如: 英维克)">
+        <input type="text" id="env" placeholder="天位变量 (如: 算力新政)">
+        <button onclick="evolve()">开启推演</button>
+        <div id="res" class="result">
+            <div class="gua-display" id="gua"></div>
+            <p id="logicText" style="font-size: 14px; color: #aaa; line-height: 1.6;"></p>
         </div>
     </div>
 
-    <script>
-        const G = {1:"乾", 2:"兑", 3:"离", 4:"震", 5:"巽", 6:"坎", 7:"艮", 8:"坤"};
-        function h(s, m) {
-            let r = 0;
-            for(let i=0; i<s.length; i++) r = (r << 5) - r + s.charCodeAt(i);
-            return Math.abs(r % m) || m;
-        }
-        function calc() {
-            const t = document.getElementById('target').value;
-            const e = document.getElementById('env').value;
-            if(!t) return alert("请输入内容");
-            
-            let u = h(e, 8), l = h(t, 8), m = h(t+e, 6);
-            let bu = u, bl = l;
-            if(m <= 3) bl = (l % 8) + 1; else bu = (u % 8) + 1;
-            
-            document.getElementById('res').style.display = 'block';
-            document.getElementById('b1').innerHTML = `<small style="font-size:12px;display:block">本</small>${G[u]}${G[l]}`;
-            document.getElementById('b2').innerHTML = `<small style="font-size:12px;display:block">变</small>${G[bu]}${G[bl]}`;
-            document.getElementById('yao').innerText = `动爻：第 ${m} 爻`;
-            document.getElementById('info').innerText = `执行官分析：${t}受到"${e}"影响，局势正从${G[u]}${G[l]}向${G[bu]}${G[bl]}转化。`;
-        }
-    </script>
+<script>
+    const G = ["", "乾(天)", "兑(泽)", "离(火)", "震(雷)", "巽(风)", "坎(水)", "艮(山)", "坤(地)"];
+    const COLORS = ["", "#FFD700", "#E0E0E0", "#FF4500", "#9370DB", "#40E0D0", "#1E90FF", "#8B4513", "#556B2F"];
+
+    function hash(s, m) {
+        let r = 0;
+        for(let i=0; i<s.length; i++) r = (r << 5) - r + s.charCodeAt(i);
+        return Math.abs(r % m) || m;
+    }
+
+    function evolve() {
+        const t = document.getElementById('target').value;
+        const e = document.getElementById('env').value;
+        if(!t || !e) return alert("请输入完整参数");
+
+        let u = hash(e, 8), l = hash(t, 8), m = hash(t+e, 6);
+        let bu = u, bl = l;
+        if(m <= 3) bl = (l % 8) + 1; else bu = (u % 8) + 1;
+
+        // 视觉反馈逻辑：根据上卦改变全局色调
+        document.documentElement.style.setProperty('--main-color', COLORS[u]);
+        document.body.style.boxShadow = `inset 0 0 100px ${COLORS[u]}33`;
+
+        document.getElementById('res').style.display = 'block';
+        document.getElementById('gua').innerText = `${G[u]} | ${G[l]}`;
+        document.getElementById('logicText').innerText = `【推演结果】
+        当前局势处于「${G[u]}」位笼罩。
+        由于「${e}」的扰动，系统在第 ${m} 爻发生量子坍缩。
+        演化路径：向「${G[bu]}${G[bl]}」状态迁移。建议关注其技术底层与政策的耦合度。`;
+    }
+</script>
 </body>
 </html>

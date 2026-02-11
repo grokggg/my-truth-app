@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M1XP3NLB1G"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M1XP3NLB1G');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>万象森罗终端 V5.0</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <style>
+        :root { --main: #9370DB; --bg: #050505; }
+        body { background: var(--bg); color: #dcdcdc; font-family: "PingFang SC", serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 500px; width: 100%; }
+        .card { background: linear-gradient(145deg, #121212, #050505); border: 1px solid #2a2a2a; border-radius: 30px; padding: 30px; box-shadow: 0 0 40px rgba(147,112,219,0.2); position: relative; overflow: hidden; }
+        h1 { font-size: 1.4rem; color: var(--main); text-align: center; letter-spacing: 4px; text-shadow: 0 0 10px rgba(147,112,219,0.5); }
+        input { background: #111; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 15px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 12px; transition: 0.3s; }
+        input:focus { border-color: var(--main); outline: none; box-shadow: 0 0 10px rgba(147,112,219,0.3); }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { width: 100%; padding: 16px; background: var(--main); color: #fff; border: none; border-radius: 15px; font-weight: bold; margin-top: 15px; cursor: pointer; letter-spacing: 2px; }
+        .detect-btn { background: #4b0082; box-shadow: 0 4px 15px rgba(75,0,130,0.4); }
+        #resultArea { margin-top: 30px; display: none; background: rgba(147,112,219,0.05); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        .gua-icon { font-size: 50px; color: var(--main); text-align: center; margin-bottom: 15px; }
+        .report-section { margin-top: 20px; }
+        .section-title { font-size: 12px; color: var(--main); opacity: 0.8; margin-bottom: 8px; font-weight: bold; }
+        .section-content { font-size: 14px; line-height: 1.8; color: #bbb; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        #exportBtn { background: #fff; color: #000; display: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card" id="captureArea">
+        <h1>万象森罗终端</h1>
+        <p style="font-size: 10px; text-align: center; color: #666; margin-top: -15px;">观天之道，执天之行</p>
+        
+        <input type="text" id="target" placeholder="🔮 输入待解万物 (如: 某个抉择、某段关系)">
+        <button onclick="fetchData()" class="detect-btn" id="aiBtn">🌀 拨动时空引力</button>
+        
+        <div class="input-grid">
+            <input type="text" id="p_val" placeholder="天时: 宏观流向">
+            <input type="text" id="e_val" placeholder="地利: 现实气场">
+            <input type="text" id="s_val" placeholder="人和: 众生念力">
+            <input type="text" id="t_val" placeholder="神机: 变数逻辑">
+        </div>
+
+        <button onclick="runInference()">开启万象推演</button>
+
+        <div id="resultArea">
+            <div id="resGua" class="gua-icon"></div>
+            <div class="report-section"><div class="section-title">⚖️ 演化判定</div><div id="resJudge" class="section-content"></div></div>
+            <div class="report-section"><div class="section-title">⚠️ 劫数提醒</div><div id="resRisk" class="section-content"></div></div>
+            <div class="report-section"><div class="section-title">💡 因果指引</div><div id="resAdvice" class="section-content"></div></div>
+        </div>
+        <button onclick="exportReport()" id="exportBtn">📸 留存天机拓片</button>
+    </div>
+</div>
+
+<script>
+const TAVILY_KEY = "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"; 
+const G = ["", "乾(天)", "兑(泽)", "离(火)", "震(雷)", "巽(风)", "坎(水)", "艮(山)", "坤(地)"];
+const COLORS = ["", "#FFFFFF", "#F0E68C", "#FF4500", "#7B68EE", "#00FA9A", "#4169E1", "#D2B48C", "#708090"];
+
+async function fetchData() {
+    const target = document.getElementById('target').value;
+    if(!target) return alert("请指定推演目标");
+    const btn = document.getElementById('aiBtn');
+    btn.disabled = true;
+    btn.innerText = "⏳ 正在窥探天机...";
+
+    try {
+        const response = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: TAVILY_KEY,
+                query: `${target} 现状 演化规律 本质影响 2026 趋势`,
+                search_depth: "basic",
+                max_results: 3
+            })
+        });
+        const data = await response.json();
+        const res = data.results;
+        
+        document.getElementById('p_val').value = res[0] ? res[0].title.substring(0,12) : "时序流转";
+        document.getElementById('e_val').value = res[1] ? res[1].title.substring(0,12) : "格局已现";
+        document.getElementById('t_val').value = res[2] ? res[2].title.substring(0,12) : "数理推演";
+        document.getElementById('s_val').value = "众心所向";
+        alert("✨ 天机已洞察，请开始推演");
+    } catch (err) {
+        alert("时空扰动，请稍后再试");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🌀 拨动时空引力";
+    }
+}
+
+function hash(s) {
+    let r = 0;
+    for(let i=0; i<s.length; i++) r = (r << 5) - r + s.charCodeAt(i);
+    return Math.abs(r);
+}
+
+function runInference() {
+    const p = document.getElementById('p_val').value;
+    const upG = (hash(p + document.getElementById('e_val').value) % 8) + 1;
+    const lowG = (hash(document.getElementById('t_val').value) % 8) + 1;
+    
+    document.documentElement.style.setProperty('--main', COLORS[upG]);
+    document.getElementById('resultArea').style.display = 'block';
+    document.getElementById('exportBtn').style.display = 'block';
+    
+    document.getElementById('resGua').innerText = `${G[upG]} · ${G[lowG]}`;
+    document.getElementById('resJudge').innerText = `天时呈现「${G[upG]}」之相，神机蕴含「${G[lowG]}」之能。万物演化已入特定轨道。`;
+    document.getElementById('resRisk').innerText = `需关注「${p.substring(0,6)}」带来的能量涟漪，防止偏离核心愿景。`;
+    document.getElementById('resAdvice').innerText = `当下宜${upG < 4 ? '雷厉风行，主动破局' : '深挖广积，静待时变'}。`;
+    
+    gtag('event', 'universal_inference', { 'target': document.getElementById('target').value });
+}
+
+async function exportReport() {
+    const area = document.getElementById('captureArea');
+    const b1 = document.getElementById('exportBtn');
+    const b2 = document.getElementById('aiBtn');
+    b1.style.opacity = '0'; b2.style.opacity = '0';
+    try {
+        const canvas = await html2canvas(area, { backgroundColor: '#050505', scale: 2 });
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = `天机图-${new Date().getTime()}.png`;
+        link.click();
+    } catch (e) { alert("截图失败"); }
+    finally { b1.style.opacity = '1'; b2.style.opacity = '1'; }
+}
+</script>
+</body>
+</html>

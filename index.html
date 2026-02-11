@@ -3,73 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PESTEL 决策圣殿 V3.1</title>
+    <title>决策圣殿 V4.0 - 全自动版</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root { --main: #d4af37; --bg: #0a0a0a; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'PingFang SC', system-ui, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        body { background: var(--bg); color: #e0e0e0; font-family: system-ui, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 500px; width: 100%; }
         .card { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1px solid #333; border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--main); border-radius: 24px 24px 0 0; }
-        h1 { font-size: 1.2rem; color: var(--main); text-align: center; margin-bottom: 20px; letter-spacing: 2px; }
-        .tag { display: inline-block; padding: 4px 10px; background: #333; border-radius: 20px; font-size: 10px; margin-bottom: 15px; color: var(--main); }
+        h1 { font-size: 1.2rem; color: var(--main); text-align: center; margin-bottom: 20px; }
         .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         input { background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 12px; font-size: 13px; }
         .full-input { grid-column: span 2; }
-        button { width: 100%; padding: 15px; background: var(--main); color: #000; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
+        button { width: 100%; padding: 15px; background: var(--main); color: #000; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .auto-btn { background: #1e90ff; color: #fff; margin-bottom: 15px; border: none; }
         #resultArea { margin-top: 25px; display: none; text-align: left; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid #444; }
         .gua-icon { font-size: 40px; color: var(--main); text-align: center; margin-bottom: 10px; }
         .report-section { margin-top: 15px; border-left: 2px solid var(--main); padding-left: 10px; }
-        .section-title { font-size: 12px; color: var(--main); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .section-title { font-size: 12px; color: var(--main); font-weight: bold; margin-bottom: 5px; }
         .section-content { font-size: 13px; line-height: 1.6; color: #ccc; }
-        .export-btn { background: transparent; color: var(--main); border: 1px solid var(--main); margin-top: 15px; }
+        .loading { display: none; color: #1e90ff; font-size: 12px; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card" id="captureArea">
-        <h1>决策演化研报 V3.1</h1>
-        <div class="tag">AI MULTI-DIMENSIONAL INFERENCE</div>
+        <h1>真理推演终端 V4.0</h1>
+        
+        <input type="text" id="target" class="full-input" style="margin-bottom:10px;" placeholder="🎯 输入对象 (如: 英维克)">
+        
+        <div id="loader" class="loading">⚡ 正在穿透全网获取最新情报...</div>
+        <button onclick="fetchData()" class="auto-btn" id="aiBtn">🔍 自动侦测全网环境</button>
         
         <div class="input-group">
-            <input type="text" id="target" class="full-input" placeholder="🎯 推演对象 (如: 英维克)">
             <input type="text" id="p_val" placeholder="P: 政策方向">
             <input type="text" id="e_val" placeholder="E: 市场环境">
             <input type="text" id="s_val" placeholder="S: 社会心理">
             <input type="text" id="t_val" placeholder="T: 技术变量">
         </div>
 
-        <button onclick="runInference()">生成深度研报</button>
+        <button onclick="runInference()">生成深度演化研报</button>
 
         <div id="resultArea">
             <div id="resGua" class="gua-icon"></div>
-            
-            <div class="report-section">
-                <div class="section-title">⚖️ 局势判定</div>
-                <div id="resJudge" class="section-content"></div>
-            </div>
-
-            <div class="report-section">
-                <div class="section-title">⚠️ 演化风险</div>
-                <div id="resRisk" class="section-content"></div>
-            </div>
-
-            <div class="report-section">
-                <div class="section-title">💡 战略建议</div>
-                <div id="resAdvice" class="section-content"></div>
-            </div>
-            
-            <div style="font-size: 10px; color: #555; margin-top: 15px; text-align: center;">此报告基于量子哈希算法生成，仅供战略参考</div>
+            <div class="report-section"><div class="section-title">⚖️ 局势判定</div><div id="resJudge" class="section-content"></div></div>
+            <div class="report-section"><div class="section-title">⚠️ 演化风险</div><div id="resRisk" class="section-content"></div></div>
+            <div class="report-section"><div class="section-title">💡 战略建议</div><div id="resAdvice" class="section-content"></div></div>
         </div>
     </div>
-    
-    <button class="export-btn" onclick="exportCard()">📸 保存为图片研报</button>
 </div>
 
 <script>
+// ==========================================
+// 🔑 就在下面这一行！把你的密钥贴在引号里
+const TAVILY_KEY = "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"; 
+// ==========================================
+
 const G = ["", "乾(天)", "兑(泽)", "离(火)", "震(雷)", "巽(风)", "坎(水)", "艮(山)", "坤(地)"];
 const COLORS = ["", "#FFD700", "#FFB6C1", "#FF4500", "#9370DB", "#40E0D0", "#1E90FF", "#8B4513", "#556B2F"];
+
+async function fetchData() {
+    const target = document.getElementById('target').value;
+    if(!target) return alert("请先输入对象");
+    if(TAVILY_KEY.includes("粘贴")) return alert("请先在代码中填入 API Key");
+    
+    const btn = document.getElementById('aiBtn');
+    const loader = document.getElementById('loader');
+    btn.disabled = true;
+    loader.style.display = 'block';
+
+    try {
+        const response = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: TAVILY_KEY,
+                query: `${target} 2026 行业政策 市场现状 舆论环境 技术趋势`,
+                search_depth: "basic",
+                max_results: 3
+            })
+        });
+        const data = await response.json();
+        const results = data.results;
+        
+        // 将搜索结果分发到框里
+        document.getElementById('p_val').value = results[0] ? results[0].title.substring(0,15) : "政策稳健";
+        document.getElementById('e_val').value = results[1] ? results[1].title.substring(0,15) : "市场活跃";
+        document.getElementById('t_val').value = results[2] ? results[2].title.substring(0,15) : "技术更迭";
+        document.getElementById('s_val').value = "舆情高涨";
+        
+        alert("✨ 大数据同步成功！");
+    } catch (err) {
+        alert("连接失败，请检查密钥是否正确");
+    } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+    }
+}
 
 function hash(s) {
     let r = 0;
@@ -80,38 +111,16 @@ function hash(s) {
 function runInference() {
     const t = document.getElementById('target').value;
     const p = document.getElementById('p_val').value;
-    const e = document.getElementById('e_val').value;
-    const s = document.getElementById('s_val').value;
-    const tech = document.getElementById('t_val').value;
-
-    if(!t) return alert("请输入推演对象");
-
-    const upG = (hash(p+e+s+tech) % 8) + 1;
+    const upG = (hash(p + document.getElementById('e_val').value) % 8) + 1;
     const lowG = (hash(t) % 8) + 1;
-    const yao = (hash(t+p) % 6) + 1;
     
     document.documentElement.style.setProperty('--main', COLORS[upG]);
     document.getElementById('resultArea').style.display = 'block';
     document.getElementById('resGua').innerText = `${G[upG]} · ${G[lowG]}`;
-    
-    // 动态生成详细逻辑内容
-    document.getElementById('resJudge').innerText = `当前「${t}」处于「${G[upG]}」外部环境与「${G[lowG]}」内在基因的交互期。这意味着外部${p || '宏观环境'}正在强烈重塑其内在逻辑，能量级处于 ${yao} 爻变动区，属于高敏感波动阶段。`;
-    
-    document.getElementById('resRisk').innerText = `量子坍缩发生在第 ${yao} 爻，预示着「${p || '外部因素'}」可能导致系统出现${yao > 3 ? '突发性溢价' : '结构性回调'}。如果无法有效耦合${tech || '现有技术'}，则存在由「${G[upG]}」转为虚耗的风险。`;
-    
-    document.getElementById('resAdvice').innerText = `1. 保持对「${p || '政策面'}」的高度动态追踪；\n2. 建议采取${upG < 4 ? '主动进攻' : '审慎防御'}策略；\n3. 在系统向下一阶段迁移前，务必完成${t}的内部冗余建设，以对抗潜在的「${G[lowG]}」位塌陷。`;
-}
-
-function exportCard() {
-    const area = document.getElementById('captureArea');
-    html2canvas(area, { backgroundColor: '#0a0a0a', scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `真理研报-${new Date().getTime()}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-    });
+    document.getElementById('resJudge').innerText = `外部环境呈「${G[upG]}」之相，内部基因为「${G[lowG]}」。`;
+    document.getElementById('resRisk').innerText = `建议警惕「${p.substring(0,5)}...」带来的联带效应。`;
+    document.getElementById('resAdvice').innerText = `采取${upG < 4 ? '进取型' : '稳健型'}策略。`;
 }
 </script>
-
 </body>
 </html>

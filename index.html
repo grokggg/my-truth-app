@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>绝对真理移动版</title>
+    <style>
+        body { background: #121212; color: #d4af37; font-family: sans-serif; margin: 0; display: flex; justify-content: center; padding-top: 20px; }
+        .app-card { background: #1e1e1e; width: 90%; border-radius: 20px; padding: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #d4af37; color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 16px; } /* 16px 防止iOS自动放大 */
+        button { width: 100%; padding: 15px; background: #d4af37; color: #000; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; margin-top: 10px; }
+        .res-box { margin-top: 20px; display: none; border-top: 1px solid #333; padding-top: 20px; text-align: center; }
+        .gua-wrap { display: flex; justify-content: space-around; font-size: 24px; margin-bottom: 15px; }
+        .hint { color: #888; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="app-card">
+        <h2 style="text-align:center">🏮 演化决策引擎</h2>
+        <input type="text" id="target" placeholder="输入目标（如：英维克）">
+        <input type="text" id="env" placeholder="输入当前环境（如：监管加强）">
+        <button onclick="calc()">开始推演</button>
+        
+        <div id="res" class="res-box">
+            <div class="gua-wrap">
+                <div id="b1"></div>
+                <div style="color:#555">→</div>
+                <div id="b2"></div>
+            </div>
+            <div id="yao" style="margin-bottom:10px"></div>
+            <p class="hint" id="info"></p>
+        </div>
+    </div>
+
+    <script>
+        const G = {1:"乾", 2:"兑", 3:"离", 4:"震", 5:"巽", 6:"坎", 7:"艮", 8:"坤"};
+        function h(s, m) {
+            let r = 0;
+            for(let i=0; i<s.length; i++) r = (r << 5) - r + s.charCodeAt(i);
+            return Math.abs(r % m) || m;
+        }
+        function calc() {
+            const t = document.getElementById('target').value;
+            const e = document.getElementById('env').value;
+            if(!t) return alert("请输入内容");
+            
+            let u = h(e, 8), l = h(t, 8), m = h(t+e, 6);
+            let bu = u, bl = l;
+            if(m <= 3) bl = (l % 8) + 1; else bu = (u % 8) + 1;
+            
+            document.getElementById('res').style.display = 'block';
+            document.getElementById('b1').innerHTML = `<small style="font-size:12px;display:block">本</small>${G[u]}${G[l]}`;
+            document.getElementById('b2').innerHTML = `<small style="font-size:12px;display:block">变</small>${G[bu]}${G[bl]}`;
+            document.getElementById('yao').innerText = `动爻：第 ${m} 爻`;
+            document.getElementById('info').innerText = `执行官分析：${t}受到"${e}"影响，局势正从${G[u]}${G[l]}向${G[bu]}${G[bl]}转化。`;
+        }
+    </script>
+</body>
+</html>

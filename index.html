@@ -2,30 +2,42 @@
 <html lang="zh-CN">
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M1XP3NLB1G"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-M1XP3NLB1G');
-</script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M1XP3NLB1G');
+    </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>决策圣殿 V4.0 - 全自动版</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
     <style>
         :root { --main: #d4af37; --bg: #0a0a0a; }
         body { background: var(--bg); color: #e0e0e0; font-family: system-ui, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 500px; width: 100%; }
+        /* 截图区域添加内边距防止切边 */
         .card { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1px solid #333; border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--main); border-radius: 24px 24px 0 0; }
         h1 { font-size: 1.2rem; color: var(--main); text-align: center; margin-bottom: 20px; }
         .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         input { background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 12px; font-size: 13px; }
         .full-input { grid-column: span 2; }
-        button { width: 100%; padding: 15px; background: var(--main); color: #000; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        
+        button { width: 100%; padding: 15px; background: var(--main); color: #000; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.3s; }
         .auto-btn { background: #1e90ff; color: #fff; margin-bottom: 15px; border: none; }
+        
+        /* 导出按钮的特殊样式 */
+        #exportBtn { 
+            background: linear-gradient(135deg, #d4af37, #8a6d3b); 
+            color: #fff; 
+            display: none; /* 初始隐藏 */
+            margin-top: 15px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
         #resultArea { margin-top: 25px; display: none; text-align: left; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid #444; }
         .gua-icon { font-size: 40px; color: var(--main); text-align: center; margin-bottom: 10px; }
         .report-section { margin-top: 15px; border-left: 2px solid var(--main); padding-left: 10px; }
@@ -60,23 +72,23 @@
             <div class="report-section"><div class="section-title">⚠️ 演化风险</div><div id="resRisk" class="section-content"></div></div>
             <div class="report-section"><div class="section-title">💡 战略建议</div><div id="resAdvice" class="section-content"></div></div>
         </div>
+
+        <button onclick="exportReport()" id="exportBtn">📜 点击保存推演符咒</button>
     </div>
 </div>
 
 <script>
-// ==========================================
-// 🔑 就在下面这一行！把你的密钥贴在引号里
 const TAVILY_KEY = "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"; 
-// ==========================================
-
 const G = ["", "乾(天)", "兑(泽)", "离(火)", "震(雷)", "巽(风)", "坎(水)", "艮(山)", "坤(地)"];
 const COLORS = ["", "#FFD700", "#FFB6C1", "#FF4500", "#9370DB", "#40E0D0", "#1E90FF", "#8B4513", "#556B2F"];
 
 async function fetchData() {
     const target = document.getElementById('target').value;
     if(!target) return alert("请先输入对象");
-    if(TAVILY_KEY.includes("粘贴")) return alert("请先在代码中填入 API Key");
     
+    // 埋点：记录用户搜索行为
+    gtag('event', 'ai_search', { 'search_term': target });
+
     const btn = document.getElementById('aiBtn');
     const loader = document.getElementById('loader');
     btn.disabled = true;
@@ -96,7 +108,6 @@ async function fetchData() {
         const data = await response.json();
         const results = data.results;
         
-        // 将搜索结果分发到框里
         document.getElementById('p_val').value = results[0] ? results[0].title.substring(0,15) : "政策稳健";
         document.getElementById('e_val').value = results[1] ? results[1].title.substring(0,15) : "市场活跃";
         document.getElementById('t_val').value = results[2] ? results[2].title.substring(0,15) : "技术更迭";
@@ -104,7 +115,7 @@ async function fetchData() {
         
         alert("✨ 大数据同步成功！");
     } catch (err) {
-        alert("连接失败，请检查密钥是否正确");
+        alert("连接失败");
     } finally {
         btn.disabled = false;
         loader.style.display = 'none';
@@ -118,17 +129,54 @@ function hash(s) {
 }
 
 function runInference() {
-    const t = document.getElementById('target').value;
     const p = document.getElementById('p_val').value;
     const upG = (hash(p + document.getElementById('e_val').value) % 8) + 1;
-    const lowG = (hash(t) % 8) + 1;
+    const lowG = (hash(document.getElementById('t_val').value) % 8) + 1;
     
     document.documentElement.style.setProperty('--main', COLORS[upG]);
     document.getElementById('resultArea').style.display = 'block';
+    // 显示导出按钮
+    document.getElementById('exportBtn').style.display = 'block';
+    
     document.getElementById('resGua').innerText = `${G[upG]} · ${G[lowG]}`;
     document.getElementById('resJudge').innerText = `外部环境呈「${G[upG]}」之相，内部基因为「${G[lowG]}」。`;
     document.getElementById('resRisk').innerText = `建议警惕「${p.substring(0,5)}...」带来的联带效应。`;
     document.getElementById('resAdvice').innerText = `采取${upG < 4 ? '进取型' : '稳健型'}策略。`;
+
+    // 埋点：记录研报生成行为
+    gtag('event', 'generate_report', { 'gua': G[upG] });
+}
+
+// 2. 新增：导出图片功能
+async function exportReport() {
+    const area = document.getElementById('captureArea');
+    const exportBtn = document.getElementById('exportBtn');
+    const aiBtn = document.getElementById('aiBtn');
+    
+    // 隐藏按钮防止被截入图中
+    exportBtn.style.opacity = '0';
+    aiBtn.style.opacity = '0';
+
+    try {
+        const canvas = await html2canvas(area, {
+            backgroundColor: '#0a0a0a',
+            scale: 2,
+            useCORS: true
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.download = `真理推演-${new Date().getTime()}.png`;
+        link.click();
+        
+        // 埋点：记录用户保存图片
+        gtag('event', 'share_image');
+    } catch (e) {
+        alert("保存失败，请截图分享");
+    } finally {
+        exportBtn.style.opacity = '1';
+        aiBtn.style.opacity = '1';
+    }
 }
 </script>
 </body>
